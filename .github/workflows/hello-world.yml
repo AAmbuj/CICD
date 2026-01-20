@@ -1,0 +1,24 @@
+name: Hello World CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Hello World Echo
+      run: echo "Hello World! Starting the CI/CD pipeline for the Calculator project."
+
+    - name: Compile Calculator
+      run: g++ -o calculator main.cc calculator.cc
+
+    - name: Run Calculator Demo
+      run: ./calculator
