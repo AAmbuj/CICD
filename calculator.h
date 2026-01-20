@@ -9,6 +9,7 @@ class Calculator {
   ~Calculator() = default;
 
   double Add(double a, double b);
+  double Add(double a, double b, double c);
   double Subtract(double a, double b);
   double Multiply(double a, double b);
   double Divide(double a, double b);
