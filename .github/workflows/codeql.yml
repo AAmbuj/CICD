@@ -39,9 +39,23 @@ jobs:
           sarif_file: codeql_results/codeql-results.sarif
           category: /language:cpp
 
-      - name: Upload CSV report artifact
+      - name: Generate analysis dashboard
+        if: always()
+        run: |
+          bazel run //quality/dashboard:generate_dashboard -- \
+            --csv            codeql_results/codeql-results.csv \
+            --clang-tidy-dir clang_tidy_results \
+            --history        codeql_results/quality_history.json \
+            --html           codeql_results/dashboard.html \
+            --github-summary
+
+      - name: Upload dashboard artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: codeql-csv-report
-          path: codeql_results/codeql-results.csv
+          name: static-analysis-dashboard
+          path: |
+            codeql_results/dashboard.html
+            codeql_results/codeql-results.csv
+            codeql_results/codeql-results.sarif
           retention-days: 14
