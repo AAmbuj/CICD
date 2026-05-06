@@ -210,24 +210,32 @@ jobs:
           retention-days: 90
 
       - name: Assemble GitHub Pages site
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
-          mkdir -p gh-pages
-          # Main dashboard
+          mkdir -p gh-pages/data
           cp codeql_results/dashboard.html gh-pages/index.html
-          # Coverage sub-report (if produced)
           if [ -d coverage_html ]; then
             cp -r coverage_html gh-pages/coverage
           fi
-          # Raw data files
-          mkdir -p gh-pages/data
-          cp codeql_results/codeql-results.csv  gh-pages/data/ 2>/dev/null || true
-          cp codeql_results/codeql-results.sarif gh-pages/data/ 2>/dev/null || true
-          # Inject a small nav bar into index.html so coverage link is visible
-          sed -i 's|</body>|<footer style="margin-top:2rem;color:#8b949e;font-size:.8rem">\
-            Run: '"${{ github.run_number }}"' &nbsp;|&nbsp; \
-            Commit: '"${GITHUB_SHA::7}"' &nbsp;|&nbsp; \
-            <a style="color:#58a6ff" href="coverage/index.html">Coverage report</a>\
-          </footer></body>|' gh-pages/index.html
+          cp codeql_results/codeql-results.csv   gh-pages/data/ 2>/dev/null || true
+          cp codeql_results/codeql-results.sarif  gh-pages/data/ 2>/dev/null || true
+          python3 - <<'EOF'
+          import os, pathlib
+          f = pathlib.Path("gh-pages/index.html")
+          html = f.read_text()
+          footer = (
+            '\n<footer style="margin-top:2rem;padding-top:1rem;'
+            'border-top:1px solid #30363d;color:#8b949e;font-size:.8rem">'
+            f'Run <strong>{os.environ["RUN_NUMBER"]}</strong> &nbsp;|&nbsp; '
+            f'Commit <code>{os.environ["COMMIT_SHA"][:7]}</code> &nbsp;|&nbsp; '
+            '<a style="color:#58a6ff" href="coverage/index.html">Coverage report</a>'
+            '</footer>'
+          )
+          html = html.replace("</body>", footer + "\n</body>", 1)
+          f.write_text(html)
+          EOF
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
