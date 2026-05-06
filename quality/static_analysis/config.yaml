@@ -1,0 +1,5 @@
+queries:
+  - codeql/misra-cpp-coding-standards
+formats:
+  - sarif-latest
+  - csv

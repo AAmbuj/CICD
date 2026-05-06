@@ -1,0 +1,25 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+exports_files([".clang-tidy"])
+
+cc_library(
+    name = "calculator_lib",
+    srcs = ["calculator.cc"],
+    hdrs = ["calculator.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_binary(
+    name = "calculator",
+    srcs = ["main.cc"],
+    deps = [":calculator_lib"],
+)
+
+cc_test(
+    name = "calculator_test",
+    srcs = ["calculator_test.cc"],
+    deps = [
+        ":calculator_lib",
+        "@googletest//:gtest_main",
+    ],
+)

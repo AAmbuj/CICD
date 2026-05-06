@@ -1,0 +1,13 @@
+# Enable Bzlmod (MODULE.bazel) — required for Bazel < 7; default in Bazel 7+
+common --enable_bzlmod
+
+# C++ build settings
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# Keep test failures readable locally and in CI.
+test --test_output=errors
+
+# Quality configurations modeled after a Bazel-native setup.
+import %workspace%/quality/coverage.bazelrc
+import %workspace%/quality/static_analysis/static_analysis.bazelrc

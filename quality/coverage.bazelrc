@@ -1,0 +1,4 @@
+# LLVM/lcov-based coverage output.
+coverage --combined_report=lcov
+coverage --instrumentation_filter=^//[/:],-//:clang_tidy
+coverage --cxxopt=-std=c++17
