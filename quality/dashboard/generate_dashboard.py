@@ -146,7 +146,7 @@ def load_clang_tidy(search_dir: pathlib.Path) -> list[dict]:
 # ── Coverage (lcov) ───────────────────────────────────────────────────────────
 def load_lcov(path: pathlib.Path) -> tuple[dict, list[dict]]:
     """Return (overall_summary_dict, per_file_list). Empty dicts/list if unavailable."""
-    if not path.exists():
+    if not path or not path.is_file():
         return {}, []
     files: list[dict] = []
     cur: dict | None = None
