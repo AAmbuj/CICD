@@ -1,0 +1,47 @@
+name: Bazel CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  bazel-build-test-run:
+    name: Bazel Build → Test → Run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.8.5
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      - name: Bazel build (all targets)
+        run: bazel build //...
+
+      - name: Bazel test
+        run: |
+          bazel test \
+            --test_output=all \
+            --test_verbose_timeout_warnings \
+            --build_tests_only \
+            //:calculator_test
+
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bazel-test-logs
+          path: |
+            bazel-testlogs/**/test.log
+            bazel-testlogs/**/test.xml
+          retention-days: 7
+
+      - name: Bazel run (smoke test binary output)
+        run: bazel run //:calculator

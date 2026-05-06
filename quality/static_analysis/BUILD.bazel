@@ -1,0 +1,14 @@
+load("@rules_python//python:py_binary.bzl", "py_binary")
+
+py_binary(
+    name = "codeql_lint",
+    srcs = ["codeql_lint.py"],
+    main = "codeql_lint.py",
+    data = [
+        "config.yaml",
+        "@codeql_bundle_linux64//:codeql_bin",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+exports_files(["config.yaml"])

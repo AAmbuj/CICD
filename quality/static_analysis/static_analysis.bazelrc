@@ -1,0 +1,12 @@
+# Clang-tidy configuration
+test:clang-tidy --aspects=//tools/lint:linters.bzl%clang_tidy_aspect
+test:clang-tidy --output_groups=+rules_lint_report
+
+# CodeQL configuration
+common:codeql --sandbox_writable_path=/var/tmp
+common:codeql --nouse_action_cache
+common:codeql --noremote_accept_cached
+common:codeql --noremote_upload_local_results
+common:codeql --spawn_strategy=local
+common:codeql --strategy=CppCompile=local
+common:codeql --strategy=CppLink=local

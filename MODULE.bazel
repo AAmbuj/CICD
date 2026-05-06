@@ -1,0 +1,38 @@
+"""Bazel module definitions for the calculator project."""
+
+module(
+    name = "calculator",
+    version = "1.0.0",
+)
+
+bazel_dep(name = "rules_cc", version = "0.0.9")
+bazel_dep(name = "googletest", version = "1.14.0")
+bazel_dep(name = "aspect_rules_lint", version = "1.0.0")
+bazel_dep(name = "rules_python", version = "0.40.0")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.11",
+)
+
+http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_file(
+    name = "clang_tidy_linux_amd64",
+    executable = True,
+    urls = ["https://github.com/muttleyxd/clang-tools-static-binaries/releases/download/master-32d3ac78/clang-tidy-18_linux-amd64"],
+)
+
+http_archive(
+    name = "codeql_bundle_linux64",
+    build_file_content = """
+filegroup(
+    name = \"codeql_bin\",
+    srcs = [\"codeql\"],
+    visibility = [\"//visibility:public\"],
+)
+""",
+    strip_prefix = "codeql",
+    urls = ["https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.23.6/codeql-bundle-linux64.tar.gz"],
+)
