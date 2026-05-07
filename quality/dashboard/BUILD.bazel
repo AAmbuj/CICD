@@ -1,0 +1,7 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
+py_binary(
+    name = "generate_dashboard",
+    srcs = ["generate_dashboard.py"],
+    visibility = ["//visibility:public"],
+)

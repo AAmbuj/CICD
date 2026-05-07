@@ -1,0 +1,10 @@
+# Bazel build outputs and symlinks
+bazel-*
+
+# Generated quality results (produced at runtime, not source)
+codeql_db/
+codeql_results/
+
+# Python bytecode
+__pycache__/
+*.pyc
