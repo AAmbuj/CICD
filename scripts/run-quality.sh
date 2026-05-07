@@ -28,11 +28,11 @@ REPORT="$(bazel info output_path)/_coverage/_coverage_report.dat"
 [ -f "$REPORT" ] && cp "$REPORT" coverage_results/coverage.dat || true
 
 echo "==> Generating dashboard"
-EXTRA_ARGS=""
-$SERVE && EXTRA_ARGS="--serve"
+EXTRA_ARGS=()
+$SERVE && EXTRA_ARGS=(--serve)
 bazel run //quality/dashboard:generate_dashboard -- \
   --csv            codeql_results/codeql-results.csv \
   --clang-tidy-dir clang_tidy_results \
   --lcov           coverage_results/coverage.dat \
   --html           codeql_results/dashboard.html \
-  $EXTRA_ARGS
+  "${EXTRA_ARGS[@]}"

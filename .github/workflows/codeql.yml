@@ -39,6 +39,14 @@ jobs:
           sarif_file: codeql_results/codeql-results.sarif
           category: /language:cpp
 
+      - name: Restore quality history
+        if: always()
+        run: |
+          mkdir -p codeql_results
+          git fetch origin gh-pages 2>/dev/null || true
+          git show origin/gh-pages:data/quality_history.json \
+            > codeql_results/quality_history.json 2>/dev/null || true
+
       - name: Generate analysis dashboard
         if: always()
         run: |

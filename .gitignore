@@ -4,7 +4,12 @@ bazel-*
 # Generated quality results (produced at runtime, not source)
 codeql_db/
 codeql_results/
+clang_tidy_results/
+coverage_results/
 
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Virtual environment
+.venv/
