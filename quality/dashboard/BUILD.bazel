@@ -3,5 +3,10 @@ load("@rules_python//python:defs.bzl", "py_binary")
 py_binary(
     name = "generate_dashboard",
     srcs = ["generate_dashboard.py"],
+    data = ["dashboard.html.j2"],
+    deps = [
+        "@dashboard_deps//jinja2",
+        "@dashboard_deps//markupsafe",
+    ],
     visibility = ["//visibility:public"],
 )

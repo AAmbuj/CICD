@@ -18,7 +18,7 @@ jobs:
       run: echo "Hello World! Starting the CI/CD pipeline for the Calculator project."
 
     - name: Compile Calculator
-      run: g++ -o calculator main.cc calculator.cc
+      run: g++ -std=c++17 -o calculator main.cc calculator.cc
 
     - name: Run Calculator Demo
       run: ./calculator

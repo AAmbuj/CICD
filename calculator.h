@@ -1,5 +1,5 @@
-#ifndef SRC_CALCULATOR_H_
-#define SRC_CALCULATOR_H_
+#ifndef CALCULATOR_H_
+#define CALCULATOR_H_
 
 namespace demo {
 
@@ -17,4 +17,4 @@ class Calculator {
 
 }  // namespace demo
 
-#endif  // SRC_CALCULATOR_H_
+#endif  // CALCULATOR_H_
