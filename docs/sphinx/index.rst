@@ -28,6 +28,7 @@ and the quality tooling used to keep the repository easy to maintain and extend.
 
    quality
    code_coverage
+   dashboard
 
 .. toctree::
    :maxdepth: 2
@@ -77,7 +78,7 @@ Start here if you are new to the repository:
 * :doc:`quality` for static analysis and quality checks
 * :doc:`development` for day-to-day contributor workflow
 * :doc:`contributing` for contribution expectations
-* `Quality Dashboard <dashboard/>`_ for published metrics and reports
+* :doc:`dashboard` for published metrics and reports
 
 Key Features
 ============
