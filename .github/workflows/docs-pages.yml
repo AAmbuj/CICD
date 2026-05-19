@@ -47,6 +47,7 @@ jobs:
           rm -rf _site
           mkdir -p _site
           cp -a bazel-bin/docs/_build/. _site/
+          chmod -R u+w _site
 
       - name: Restore dashboard history from published site
         run: |
