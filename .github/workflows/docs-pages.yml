@@ -1,0 +1,100 @@
+name: Docs Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@0.8.5
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      - name: Compute docs base URL
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          if [[ "${REPO_NAME}" == "${OWNER}.github.io" ]]; then
+            echo "DOCS_BASE_URL=https://${OWNER}.github.io" >> "$GITHUB_ENV"
+          else
+            echo "DOCS_BASE_URL=https://${OWNER}.github.io/${REPO_NAME}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Build documentation with Bazel
+        run: |
+          bazel build //docs:build_docs
+          rm -rf _site
+          mkdir -p _site
+          cp -a bazel-bin/docs/_build/. _site/
+
+      - name: Restore dashboard history from published site
+        run: |
+          mkdir -p _site/dashboard
+          curl -fsSL "${DOCS_BASE_URL}/dashboard/quality_history.json" -o _site/dashboard/quality_history.json || true
+
+      - name: Run nightly quality checks for dashboard enrichment
+        if: github.event_name == 'schedule'
+        run: |
+          bazel test --config=clang-tidy //... || true
+          bazel run //quality/static_analysis:codeql_lint -- --target=//... || true
+
+      - name: Generate coverage data
+        run: |
+          bazel coverage //:calculator_test
+          REPORT_PATH="$(bazel info output_path)/_coverage/_coverage_report.dat"
+          mkdir -p coverage_results
+          cp "$REPORT_PATH" coverage_results/coverage.dat
+
+      - name: Build dashboard page
+        run: |
+          bazel run //quality:dashboard -- \
+            --csv codeql_results/codeql-results.csv \
+            --clang-tidy-dir bazel-bin \
+            --lcov coverage_results/coverage.dat \
+            --html _site/dashboard/index.html \
+            --history _site/dashboard/quality_history.json
+
+      - name: Add .nojekyll
+        run: touch _site/.nojekyll
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,16 +1,16 @@
-name: Nightly Quality Dashboard
+name: Nightly Quality Checks
 
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 jobs:
   quality:
-    name: Quality Checks & Dashboard
+    name: Quality Checks (No Deploy)
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       security-events: write
     steps:
       - uses: actions/checkout@v4
@@ -22,17 +22,17 @@ jobs:
           disk-cache: ${{ github.workflow }}
           repository-cache: true
 
-      - name: Restore KPI history
-        run: |
-          mkdir -p codeql_results
-          git fetch origin gh-pages 2>/dev/null &&
-          git show origin/gh-pages:data/quality_history.json > codeql_results/quality_history.json 2>/dev/null || true
+      - name: Run Clang-Tidy
+        continue-on-error: true
+        run: bazel test --config=clang-tidy //...
 
-      - name: Run checks
-        run: |
-          bazel test --config=clang-tidy //... || true
-          bazel run //quality/static_analysis:codeql_lint -- --target=//... || true
-          bazel coverage //:calculator_test || true
+      - name: Run CodeQL
+        continue-on-error: true
+        run: bazel run //quality/static_analysis:codeql_lint -- --target=//...
+
+      - name: Run Coverage
+        continue-on-error: true
+        run: bazel coverage //:calculator_test
 
       - name: Collect results & generate dashboard
         if: always()
@@ -40,7 +40,7 @@ jobs:
           mkdir -p clang_tidy_results coverage_results coverage_html
           find bazel-bin -name "*.AspectRulesLintClangTidy.report" -exec cp {} clang_tidy_results/ \; 2>/dev/null || true
           REPORT="$(bazel info output_path)/_coverage/_coverage_report.dat"
-          [ -f "$REPORT" ] && cp "$REPORT" coverage_results/coverage.dat && genhtml "$REPORT" -o coverage_html --legend || true
+          [[ -f "$REPORT" ]] && cp "$REPORT" coverage_results/coverage.dat && genhtml "$REPORT" -o coverage_html --legend || true
           bazel run //quality/dashboard:generate_dashboard -- \
             --csv codeql_results/codeql-results.csv \
             --clang-tidy-dir clang_tidy_results \
@@ -57,29 +57,13 @@ jobs:
           category: /language:cpp
         continue-on-error: true
 
-      - name: Deploy to GitHub Pages
+      - name: Upload generated quality dashboard artifact
         if: always()
-        env:
-          RUN_NUMBER: ${{ github.run_number }}
-          COMMIT_SHA: ${{ github.sha }}
-        run: |
-          mkdir -p gh-pages/data
-          cp codeql_results/dashboard.html gh-pages/index.html
-          [ -d coverage_html ] && cp -r coverage_html gh-pages/coverage || true
-          cp codeql_results/{codeql-results.csv,codeql-results.sarif,quality_history.json} gh-pages/data/ 2>/dev/null || true
-          python3 -c "
-          import os, pathlib
-          f = pathlib.Path('gh-pages/index.html')
-          sha = os.environ['COMMIT_SHA'][:7]
-          run = os.environ['RUN_NUMBER']
-          footer = f'<footer style=\"margin-top:2rem;padding-top:1rem;border-top:1px solid #30363d;color:#8b949e;font-size:.8rem\">Run <strong>{run}</strong> | Commit <code>{sha}</code> | <a style=\"color:#58a6ff\" href=\"coverage/index.html\">Coverage report</a></footer>'
-          f.write_text(f.read_text().replace('</body>', footer + '\n</body>', 1))
-          "
-
-      - uses: peaceiris/actions-gh-pages@v4
-        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: gh-pages
-          publish_branch: gh-pages
-          commit_message: "chore: quality run #${{ github.run_number }}"
+          name: nightly-quality-dashboard
+          path: |
+            codeql_results/dashboard.html
+            codeql_results/quality_history.json
+            coverage_html/
+          retention-days: 14

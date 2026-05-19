@@ -1,0 +1,72 @@
+"""
+Bazel build configuration for CICD Project Documentation.
+
+This module provides targets for building Sphinx documentation with Bazel.
+All documentation is built using Bazel rules and can be extended easily.
+
+Targets:
+  - :build_docs      - Build HTML documentation
+  - :serve_docs      - Serve documentation locally (development)
+  - :clean_docs      - Clean build artifacts
+  - :docs_srcs       - Documentation source files
+"""
+
+load(":sphinx_rules.bzl", "sphinx_html")
+
+# Source files for documentation
+filegroup(
+    name = "docs_sources",
+    srcs = ["//docs/sphinx:sources"],
+    visibility = ["//docs:__subpackages__"],
+)
+
+filegroup(
+    name = "sphinx_config",
+    srcs = ["//docs/sphinx:config"],
+    visibility = ["//docs:__subpackages__"],
+)
+
+# Build documentation with Sphinx
+sphinx_html(
+    name = "build_docs",
+    srcs = [
+        ":docs_sources",
+    ],
+    config = ":sphinx_config",
+    builder = "//docs/tools:sphinx_builder",
+    dashboard_builder = "//quality/dashboard:generate_dashboard",
+    tags = [
+        "manual",
+        "requires-network",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "serve_docs",
+    actual = "//docs/tools:serve_docs",
+    visibility = ["//visibility:public"],
+)
+
+# Test that documentation builds without errors
+test_suite(
+    name = "test_docs_build",
+    tests = ["//docs/tools:strict_build_test"],
+    visibility = ["//visibility:public"],
+)
+
+# Expose documentation output for external use
+filegroup(
+    name = "docs_html",
+    srcs = [":build_docs"],
+    tags = ["manual"],
+    visibility = ["//visibility:public"],
+)
+
+# Documentation metadata and configuration
+test_suite(
+    name = "docs_integrity",
+    tests = ["//docs/tools:integrity_test"],
+    visibility = ["//visibility:public"],
+)
+

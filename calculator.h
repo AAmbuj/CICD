@@ -1,19 +1,12 @@
 #ifndef CALCULATOR_H_
 #define CALCULATOR_H_
 
+#include "calculator/calculator_service.h"
+
 namespace demo {
 
-class Calculator {
- public:
-  Calculator() = default;
-  ~Calculator() = default;
-
-  double Add(double a, double b);
-  double Add(double a, double b, double c);
-  double Subtract(double a, double b);
-  double Multiply(double a, double b);
-  double Divide(double a, double b);
-};
+// Backward-compatible alias for existing callers that include "calculator.h".
+using Calculator = calculator::CalculatorService;
 
 }  // namespace demo
 

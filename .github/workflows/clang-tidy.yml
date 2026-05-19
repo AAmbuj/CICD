@@ -24,3 +24,18 @@ jobs:
 
       - name: Run clang-tidy through Bazel
         run: bazel test --config=clang-tidy //...
+
+      - name: Collect Clang-Tidy reports
+        if: always()
+        run: |
+          mkdir -p clang_tidy_results
+          find bazel-bin -name "*.AspectRulesLintClangTidy.report" \
+            -exec cp {} clang_tidy_results/ \; 2>/dev/null || true
+
+      - name: Upload Clang-Tidy reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-tidy-reports
+          path: clang_tidy_results/
+          retention-days: 14

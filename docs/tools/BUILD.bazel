@@ -1,0 +1,56 @@
+package(default_visibility = ["//docs:__pkg__"])
+
+load("@rules_python//python:defs.bzl", "py_binary")
+load("@sphinx_deps//:requirements.bzl", "requirement")
+
+py_binary(
+    name = "sphinx_builder",
+    srcs = ["sphinx_build.py"],
+    main = "sphinx_build.py",
+    deps = [
+        requirement("myst-parser"),
+        requirement("pydata-sphinx-theme"),
+        requirement("sphinx"),
+    ],
+)
+
+py_binary(
+    name = "serve_docs",
+    srcs = ["serve.py"],
+    data = [
+        "//docs:build_docs",
+        "//quality/dashboard:generate_dashboard",
+    ],
+    main = "serve.py",
+    args = [
+        "$(location //docs:build_docs)",
+        "$(location //quality/dashboard:generate_dashboard)",
+    ],
+    tags = ["manual"],
+)
+
+sh_test(
+    name = "strict_build_test",
+    srcs = ["test_docs_build.sh"],
+    data = [
+        "//docs:docs_sources",
+        "//docs:sphinx_config",
+        ":sphinx_builder",
+    ],
+    args = [
+        "$(location //docs:sphinx_config)",
+        "$(location :sphinx_builder)",
+    ],
+    tags = [
+        "requires-network",
+    ],
+)
+
+sh_test(
+    name = "integrity_test",
+    srcs = ["check_docs.sh"],
+    data = [
+        "//docs:docs_sources",
+        "//docs:sphinx_config",
+    ],
+)

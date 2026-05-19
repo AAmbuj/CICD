@@ -1,0 +1,16 @@
+# Documentation build artifacts
+sphinx/_build/
+*.pyc
+__pycache__/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.sphinx/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

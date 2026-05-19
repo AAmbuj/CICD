@@ -1,0 +1,234 @@
+/* Custom styling for CICD Project documentation */
+
+:root {
+    --color-primary: #007bff;
+    --color-secondary: #6c757d;
+    --color-success: #28a745;
+    --color-warning: #ffc107;
+    --color-danger: #dc3545;
+    --color-light: #f8f9fa;
+    --color-dark: #343a40;
+}
+
+/* Code blocks styling */
+pre, code {
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.95em;
+}
+
+code {
+    background-color: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 3px;
+    color: #d63384;
+}
+
+pre {
+    background-color: #f8f9fa;
+    border-left: 4px solid var(--color-primary);
+    padding: 12px;
+    border-radius: 4px;
+}
+
+/* Headers styling */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-dark);
+    font-weight: 600;
+}
+
+/* Links styling */
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: var(--color-secondary);
+    text-decoration: underline;
+}
+
+/* Note and warning boxes */
+.admonition {
+    border-left: 4px solid var(--color-primary);
+    padding: 12px;
+    margin: 1em 0;
+    border-radius: 4px;
+    background-color: var(--color-light);
+}
+
+.admonition-title {
+    font-weight: bold;
+    color: var(--color-dark);
+    margin-bottom: 8px;
+}
+
+.warning {
+    border-left-color: var(--color-warning);
+    background-color: #fff8e1;
+}
+
+.warning .admonition-title {
+    color: #856404;
+}
+
+.note {
+    border-left-color: var(--color-primary);
+    background-color: #e7f3ff;
+}
+
+.note .admonition-title {
+    color: #004085;
+}
+
+.tip {
+    border-left-color: var(--color-success);
+    background-color: #d4edda;
+}
+
+.tip .admonition-title {
+    color: #155724;
+}
+
+/* Table styling */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+
+table th {
+    background-color: var(--color-light);
+    border: 1px solid #dee2e6;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+table td {
+    border: 1px solid #dee2e6;
+    padding: 12px;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #fafbfc;
+}
+
+/* List styling */
+ul, ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+li {
+    margin: 0.5em 0;
+}
+
+/* Inline code styling */
+.highlight-python, .highlight-cpp, .highlight-bash, .highlight-yaml {
+    background-color: #f4f4f4;
+    border-radius: 4px;
+    padding: 1em;
+    overflow-x: auto;
+}
+
+/* Definition lists */
+dt {
+    font-weight: 600;
+    color: var(--color-dark);
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+dd {
+    margin-left: 2em;
+    margin-bottom: 1em;
+}
+
+/* Blockquotes */
+blockquote {
+    border-left: 4px solid var(--color-secondary);
+    padding-left: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    color: #666;
+    font-style: italic;
+}
+
+/* Sidebar styling */
+.sidebar {
+    background-color: var(--color-light);
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em 0;
+}
+
+.sidebar-title {
+    font-weight: 600;
+    margin-bottom: 0.5em;
+    color: var(--color-dark);
+}
+
+/* Citation styling */
+.citation {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+/* Index styling */
+.genindex-jumpbox {
+    margin: 1em 0;
+}
+
+/* Function/class signatures */
+dt.sig {
+    background-color: var(--color-light);
+    border: 1px solid #dee2e6;
+    padding: 0.5em;
+    border-radius: 4px;
+    font-family: 'Monaco', monospace;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    pre, code {
+        font-size: 0.85em;
+    }
+
+    table {
+        font-size: 0.9em;
+    }
+
+    table th, table td {
+        padding: 8px;
+    }
+
+    .admonition {
+        margin: 0.5em 0;
+        padding: 8px;
+    }
+}
+
+/* Print styles */
+@media print {
+    a {
+        text-decoration: underline;
+    }
+
+    code {
+        background-color: white;
+        color: black;
+        border: 1px solid #999;
+    }
+
+    pre {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+
+    .admonition {
+        page-break-inside: avoid;
+        border: 1px solid #999;
+    }
+}
