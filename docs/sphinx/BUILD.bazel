@@ -1,0 +1,22 @@
+package(default_visibility = ["//docs:__pkg__"])
+
+filegroup(
+    name = "sources",
+    srcs = glob(
+        [
+            "**/*.rst",
+            "**/*.md",
+            "_static/**/*",
+        ],
+        exclude = [
+            "_build/**",
+            "**/*.pyc",
+            "**/__pycache__/**",
+        ],
+    ),
+)
+
+filegroup(
+    name = "config",
+    srcs = ["conf.py"],
+)

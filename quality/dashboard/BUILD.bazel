@@ -1,12 +1,24 @@
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
-py_binary(
-    name = "generate_dashboard",
+filegroup(
+    name = "templates",
+    srcs = ["dashboard.html.j2"],
+)
+
+py_library(
+    name = "dashboard_lib",
     srcs = ["generate_dashboard.py"],
-    data = ["dashboard.html.j2"],
+    data = [":templates"],
     deps = [
         "@dashboard_deps//jinja2",
         "@dashboard_deps//markupsafe",
     ],
+)
+
+py_binary(
+    name = "generate_dashboard",
+    srcs = ["generate_dashboard.py"],
+    data = [":templates"],
+    deps = [":dashboard_lib"],
     visibility = ["//visibility:public"],
 )

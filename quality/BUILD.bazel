@@ -1,0 +1,34 @@
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "dashboard",
+    actual = "//quality/dashboard:generate_dashboard",
+)
+
+alias(
+    name = "static_analysis",
+    actual = "//quality/static_analysis:codeql_lint",
+)
+
+alias(
+    name = "CodeQL",
+    actual = "//quality/static_analysis:codeql_lint",
+)
+
+test_suite(
+    name = "Clang-tidy",
+    tests = ["//:calculator_test"],
+)
+
+test_suite(
+    name = "Coverage",
+    tests = ["//:calculator_test"],
+)
+
+filegroup(
+    name = "quality_configs",
+    srcs = [
+        "coverage.bazelrc",
+        "//quality/static_analysis:config_file",
+    ],
+)

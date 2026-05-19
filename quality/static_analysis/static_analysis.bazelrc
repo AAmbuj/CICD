@@ -1,5 +1,5 @@
 # Clang-tidy configuration
-test:clang-tidy --aspects=//tools/lint:linters.bzl%clang_tidy_aspect
+test:clang-tidy --aspects=//quality/clang_tidy:linters.bzl%clang_tidy_aspect
 test:clang-tidy --output_groups=+rules_lint_report
 
 # CodeQL configuration

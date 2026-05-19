@@ -1,13 +1,26 @@
-load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+
+filegroup(
+    name = "config_file",
+    srcs = ["config.yaml"],
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "codeql_lint_lib",
+    srcs = ["codeql_lint.py"],
+    data = [
+        ":config_file",
+        "@codeql_bundle_linux64//:codeql_bin",
+    ],
+)
 
 py_binary(
     name = "codeql_lint",
     srcs = ["codeql_lint.py"],
     main = "codeql_lint.py",
-    data = [
-        "config.yaml",
-        "@codeql_bundle_linux64//:codeql_bin",
-    ],
+    data = [":config_file"],
+    deps = [":codeql_lint_lib"],
     visibility = ["//visibility:public"],
 )
 

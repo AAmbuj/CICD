@@ -9,10 +9,24 @@ import subprocess
 import sys
 
 
+DEFAULT_EXCLUDED_TARGETS = (
+    "-//:calculator_test",
+)
+
+
 def run(command: list[str], cwd: pathlib.Path) -> None:
     completed = subprocess.run(command, cwd=cwd)
     if completed.returncode != 0:
         raise SystemExit(completed.returncode)
+
+
+def query_stdout(command: list[str], cwd: pathlib.Path) -> str:
+    completed = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+    if completed.returncode != 0:
+        if completed.stderr:
+            print(completed.stderr, file=sys.stderr, end="")
+        raise SystemExit(completed.returncode)
+    return completed.stdout
 
 
 def find_codeql_binary() -> str | None:
@@ -41,11 +55,52 @@ def find_codeql_binary() -> str | None:
     return shutil.which("codeql")
 
 
+def build_target_expression(target: str, include_tests: bool, cwd: pathlib.Path) -> str:
+    if include_tests:
+        return target
+
+    target_patterns = target.split()
+    positive_patterns = [pattern for pattern in target_patterns if not pattern.startswith("-")]
+    negative_patterns = [pattern[1:] for pattern in target_patterns if pattern.startswith("-")]
+
+    if not positive_patterns:
+        print("At least one positive Bazel target pattern is required.", file=sys.stderr)
+        raise SystemExit(1)
+
+    base_query = f"set({' '.join(positive_patterns)})"
+    filtered_query = base_query
+    if negative_patterns:
+        filtered_query = f"({filtered_query}) except set({' '.join(negative_patterns)})"
+
+    for pattern in DEFAULT_EXCLUDED_TARGETS:
+        excluded_target = pattern[1:] if pattern.startswith("-") else pattern
+        if excluded_target not in negative_patterns:
+            filtered_query = f"({filtered_query}) except set({excluded_target})"
+
+    cpp_query = f'kind("cc_(binary|library) rule", {filtered_query})'
+    resolved_targets = [
+        line.strip()
+        for line in query_stdout(["bazel", "query", cpp_query], cwd).splitlines()
+        if line.strip()
+    ]
+
+    if not resolved_targets:
+        print("No non-test C++ build targets matched the requested CodeQL scope.", file=sys.stderr)
+        raise SystemExit(1)
+
+    return " ".join(resolved_targets)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run CodeQL against Bazel targets and emit SARIF and CSV outputs.",
     )
     parser.add_argument("--target", default="//...", help="Bazel target pattern to analyze")
+    parser.add_argument(
+        "--include-tests",
+        action="store_true",
+        help="Include test targets in the CodeQL database build.",
+    )
     parser.add_argument(
         "--db",
         default="codeql_db",
@@ -66,13 +121,18 @@ def main() -> int:
 
     db_dir = repo_root / args.db
     out_dir = repo_root / args.output_dir
+    if db_dir.exists():
+        shutil.rmtree(db_dir)
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
     db_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     force_rebuild_define = f"CODEQL_FORCE_REBUILD={int(time.time())}"
+    target_expression = build_target_expression(args.target, args.include_tests, repo_root)
     build_command = (
         f"bazel --batch build --config=codeql --copt=-D{force_rebuild_define} "
-        f"--cxxopt=-D{force_rebuild_define} {args.target}"
+        f"--cxxopt=-D{force_rebuild_define} {target_expression}"
     )
     run(
         [

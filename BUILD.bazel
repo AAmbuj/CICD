@@ -3,23 +3,115 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 exports_files([".clang-tidy"])
 
 cc_library(
+    name = "calculator_operations",
+    srcs = [
+        "src/operations/arithmetic_operations.cc",
+    ],
+    hdrs = [
+        "include/calculator/operations/arithmetic_operations.h",
+        "include/calculator/operations.h",
+    ],
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "calculator_core",
+    srcs = [
+        "src/core/calculator_service.cc",
+    ],
+    hdrs = [
+        "include/calculator/i_calculator_service.h",
+        "include/calculator/calculator_service.h",
+    ],
+    includes = ["include"],
+    deps = [":calculator_operations"],
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
     name = "calculator_lib",
-    srcs = ["calculator.cc"],
-    hdrs = ["calculator.h"],
+    hdrs = [
+        "calculator.h",
+    ],
+    includes = ["include"],
+    deps = [
+        ":calculator_core",
+        ":calculator_operations",
+    ],
     visibility = ["//visibility:public"],
 )
 
 cc_binary(
     name = "calculator",
-    srcs = ["main.cc"],
+    srcs = ["app/cli_main.cc"],
     deps = [":calculator_lib"],
 )
 
 cc_test(
     name = "calculator_test",
-    srcs = ["calculator_test.cc"],
+    srcs = ["tests/unit/calculator_service_test.cc"],
     deps = [
         ":calculator_lib",
         "@googletest//:gtest_main",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# Root architecture target map for contributor discoverability.
+alias(
+    name = "core_lib",
+    actual = ":calculator_lib",
+)
+
+alias(
+    name = "core_app",
+    actual = ":calculator",
+)
+
+alias(
+    name = "unit_tests",
+    actual = ":calculator_test",
+)
+
+alias(
+    name = "docs_build",
+    actual = "//docs:build_docs",
+)
+
+alias(
+    name = "docs_serve",
+    actual = "//docs:serve_docs",
+)
+
+alias(
+    name = "quality_dashboard",
+    actual = "//quality:dashboard",
+)
+
+alias(
+    name = "quality_static_analysis",
+    actual = "//quality:static_analysis",
+)
+
+test_suite(
+    name = "docs_checks",
+    tests = [
+        "//docs:test_docs_build",
+        "//docs:docs_integrity",
+    ],
+)
+
+test_suite(
+    name = "core_checks",
+    tests = [":calculator_test"],
+)
+
+test_suite(
+    name = "project_checks",
+    tests = [
+        ":calculator_test",
+        "//docs:test_docs_build",
+        "//docs:docs_integrity",
     ],
 )
